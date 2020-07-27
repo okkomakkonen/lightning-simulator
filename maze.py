@@ -67,13 +67,13 @@ class Maze:
         """
 
         if dir is Direction.UP:
-            return self.horizontal_walls[r, c]
+            return not self.horizontal_walls[r, c]
         if dir is Direction.DOWN:
-            return self.horizontal_walls[r + 1, c]
+            return not self.horizontal_walls[r + 1, c]
         if dir is Direction.LEFT:
-            return self.vertical_walls[r, c]
+            return not self.vertical_walls[r, c]
         if dir is Direction.RIGHT:
-            return self.vertical_walls[r, c + 1]
+            return not self.vertical_walls[r, c + 1]
         return False
 
     def make_open(self, r: int, c: int, dir: Direction) -> None:
