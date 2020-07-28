@@ -17,7 +17,7 @@ import imageio
 from maze import Maze, Direction
 
 
-def breadth_first_search(m: Maze, start: int) -> List[np.array]:
+def breadth_first_search(m: Maze, start: int) -> List[np.ndarray]:
 
     visited = np.zeros((m.rows, m.cols), dtype=np.bool)
     q: Deque[Tuple[int, int]] = deque()

@@ -150,12 +150,12 @@ class Maze:
 
     def to_imagearray(
         self,
-        cols: Optional[np.array] = None,
+        cols: Optional[np.ndarray] = None,
         line_width: int = 1,
         box_width: int = 3,
         col_line: Tuple[int, int, int] = (0, 0, 0),
         col_box: Tuple[int, int, int] = (255, 255, 255),
-    ) -> np.array:
+    ) -> np.ndarray:
         """Returns an image of the maze"""
         # TODO: implement the colors for the boxes
 
