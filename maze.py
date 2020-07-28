@@ -4,11 +4,12 @@ Implements a simple Maze generator
 TODO: remove recursion from maze generator
 """
 
-from random import sample, choice
+from random import sample, randint, choice
 from enum import Enum
-from typing import Tuple
+from typing import Tuple, Optional
 import sys
 import numpy as np
+import imageio
 
 
 class Direction(Enum):
@@ -20,7 +21,7 @@ class Direction(Enum):
 class Maze:
     """Randomized maze generator class"""
 
-    def __init__(self, rows: int, cols: int) -> None:
+    def __init__(self, rows: int, cols: int, start_col: Optional[int] = None) -> None:
         """ Generates a maze randomly using a depth first search
 
         The algorithm moves through the array using a depth first search,
@@ -32,11 +33,12 @@ class Maze:
         self.horizontal_walls = np.ones((rows + 1, cols), dtype=np.bool)
         self.vertical_walls = np.ones((rows, cols + 1), dtype=np.bool)
 
-        sc = choice(range(self.cols))
-        ec = choice(range(self.cols))
-
-        self.horizontal_walls[0, sc] = 0
-        self.horizontal_walls[self.rows, ec] = 0
+        if start_col is None:
+            start_col = randint(0, cols - 1)
+        else:
+            end_col = randint(0, cols - 1)
+            self.horizontal_walls[0, start_col] = False
+            self.horizontal_walls[self.rows, end_col] = False
 
         visited = np.zeros((rows, cols), dtype=np.bool)
 
@@ -46,47 +48,55 @@ class Maze:
             visited[r, c] = True
 
             for dir in sample(dirs, 4):
-                if dir is Direction.UP:
-                    nr, nc = r - 1, c
-                if dir is Direction.DOWN:
-                    nr, nc = r + 1, c
-                if dir is Direction.LEFT:
-                    nr, nc = r, c - 1
-                if dir is Direction.RIGHT:
-                    nr, nc = r, c + 1
+                nr, nc = self.new_point(r, c, dir)
 
-                if 0 <= nr < self.rows and 0 <= nc < self.cols and not visited[nr, nc]:
+                if self.is_valid_point(nr, nc) and not visited[nr, nc]:
                     self.make_open(r, c, dir)
                     visit(nr, nc)
 
-        visit(0, sc)
+        visit(0, start_col)
+
+    def new_point(self, r: int, c: int, dir: Direction) -> Tuple[int, int]:
+        """Returns a new point in the specified direction"""
+        if dir == Direction.UP:
+            return r - 1, c
+        if dir == Direction.DOWN:
+            return r + 1, c
+        if dir == Direction.LEFT:
+            return r, c - 1
+        if dir == Direction.RIGHT:
+            return r, c + 1
+        raise ValueError("dir has to be a valid direction")
+
+    def is_valid_point(self, r: int, c: int) -> bool:
+        return 0 <= r < self.rows and 0 <= c < self.cols
 
     def is_open(self, r: int, c: int, dir: Direction) -> bool:
         """Returns true if the point (r, c) has a free path in the direction
         of dir
         """
 
-        if dir is Direction.UP:
+        if dir == Direction.UP:
             return not self.horizontal_walls[r, c]
-        if dir is Direction.DOWN:
+        if dir == Direction.DOWN:
             return not self.horizontal_walls[r + 1, c]
-        if dir is Direction.LEFT:
+        if dir == Direction.LEFT:
             return not self.vertical_walls[r, c]
-        if dir is Direction.RIGHT:
+        if dir == Direction.RIGHT:
             return not self.vertical_walls[r, c + 1]
         return False
 
     def make_open(self, r: int, c: int, dir: Direction) -> None:
         """Removes a wall at the specified point"""
 
-        if dir is Direction.UP:
-            self.horizontal_walls[r, c] = 0
-        if dir is Direction.DOWN:
-            self.horizontal_walls[r + 1, c] = 0
-        if dir is Direction.LEFT:
-            self.vertical_walls[r, c] = 0
-        if dir is Direction.RIGHT:
-            self.vertical_walls[r, c + 1] = 0
+        if dir == Direction.UP and r != 0:
+            self.horizontal_walls[r, c] = False
+        if dir == Direction.DOWN and r != self.rows - 1:
+            self.horizontal_walls[r + 1, c] = False
+        if dir == Direction.LEFT and c != 0:
+            self.vertical_walls[r, c] = False
+        if dir == Direction.RIGHT and c != self.cols - 1:
+            self.vertical_walls[r, c + 1] = False
 
     def __repr__(self) -> str:
         return f"<Maze object of size {(self.rows, self.cols)}>"
@@ -119,16 +129,62 @@ class Maze:
 
         return out
 
+    def to_imagearray(self, line_width: int = 1, box_width: int = 5) -> np.array:
+        """Returns a string of the maze"""
+        out = 255 * np.ones(
+            (
+                (line_width + box_width) * self.rows + line_width,
+                (line_width + box_width) * self.cols + line_width,
+            ),
+            dtype=np.uint8,
+        )
+        x = 0
+        for r in range(self.rows + 1):
+            # Print horizontal walls
+            for _ in range(line_width):
+                y = 0
+                for c in range(self.cols):
+                    out[x, y : y + line_width] = 0
+                    y += line_width
+                    if m.horizontal_walls[r, c]:
+                        out[x, y : y + box_width] = 0
+                    y += box_width
+                out[x, y : y + line_width] = 0
+                y += line_width
+                x += 1
+
+            if r == self.rows:
+                break
+            # Print vertical walls
+            for _ in range(box_width):
+                y = 0
+                for c in range(self.cols + 1):
+                    if m.vertical_walls[r, c]:
+                        out[x, y : y + line_width] = 0
+                    y += line_width
+                    if c == self.cols:
+                        break
+                    y += box_width
+                x += 1
+
+        return out
+
 
 if __name__ == "__main__":
+
+    """Generates a maze, prints it and saves to an image."""
 
     if len(sys.argv) == 2:
         rows, cols = int(sys.argv[1]), int(sys.argv[1])
     elif len(sys.argv) == 3:
         rows, cols = int(sys.argv[1]), int(sys.argv[2])
     else:
-        rows, cols = 20, 20
+        rows, cols = 40, 40
 
-    m = Maze(rows, cols)
+    start = randint(0, cols - 1)
+
+    m = Maze(rows, cols, start)
 
     print(m)
+
+    imageio.imwrite("media/maze.png", m.to_imagearray())
