@@ -64,15 +64,14 @@ class Maze:
             if frame.dirs is None:
                 frame.dirs = iter(sample(dirs, 4))
 
-            try:
-                dir = next(frame.dirs)
+            for dir in frame.dirs:
                 nr, nc = self.new_point(frame.r, frame.c, dir)
 
                 if self.is_valid_point(nr, nc) and not visited[nr, nc]:
                     self.make_open(frame.r, frame.c, dir)
                     stack.append(Frame(nr, nc))
-
-            except StopIteration:
+                    break
+            else:
                 stack.pop()
 
     def new_point(self, r: int, c: int, dir: Direction) -> Tuple[int, int]:

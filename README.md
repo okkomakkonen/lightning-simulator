@@ -14,3 +14,7 @@ $ pipenv install
 $ python maze.py
 $ python path_finding_simulator.py
 ```
+
+## TODO
+
+* Lightning simulation using a different kind of maze generator and tracing algorithm
