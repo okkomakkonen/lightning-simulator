@@ -2,7 +2,7 @@
 Simulating path finding algorithms
 """
 
-COL_UNVISITED = (0, 0, 0)
+COL_UNVISITED = (255, 255, 255)
 COL_PVISITED = (146, 146, 183)
 COL_VISITED = (30, 30, 153)
 
@@ -46,15 +46,21 @@ def breadth_first_search(m: Maze, start: int) -> List[np.array]:
 
 if __name__ == "__main__":
 
+    import random
+
+    random.seed(0)
+
     if len(sys.argv) == 2:
         rows, cols = int(sys.argv[1]), int(sys.argv[1])
     elif len(sys.argv) == 3:
         rows, cols = int(sys.argv[1]), int(sys.argv[2])
     else:
-        rows, cols = 40, 40
+        rows, cols = 50, 50
 
-    m = Maze(rows, cols)
+    start = randint(0, cols - 1)
 
-    ims = breadth_first_search(m, randint(0, cols - 1))
+    m = Maze(rows, cols, start)
 
-    imageio.mimwrite("media/path.gif", ims)
+    ims = breadth_first_search(m, start)
+
+    imageio.mimwrite("media/maze_path.gif", map(m.to_imagearray, ims), fps=10)
