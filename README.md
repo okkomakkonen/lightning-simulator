@@ -17,8 +17,9 @@ The file `lightning.py` can be used to simulate a lightning strike.
 $ pipenv install
 $ python maze.py
 $ python path_finding_simulator.py
+$ python lightning.py
 ```
 
 ## TODO
 
-* Lightning simulation using a different kind of maze generator and tracing algorithm
+* Backtracking algorithm to lightning simulator
