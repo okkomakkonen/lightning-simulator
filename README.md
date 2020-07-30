@@ -8,6 +8,10 @@ The `path_finding_simulator.py` file can visualize breadth first search on a maz
 
 ![Breadth first search of a maze](media/maze_path_bfs.gif) ![Depth first search of a maze](media/maze_path_dfs.gif)
 
+The file `lightning.py` can be used to simulate a lightning strike.
+
+![Lightning](media/lightning.gif)
+
 ## Usage
 ```bash
 $ pipenv install
