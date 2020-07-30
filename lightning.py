@@ -2,33 +2,34 @@
 Simulates lightning
 """
 
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Generator
 from queue import PriorityQueue
-from random import randint, seed as set_seed
+from random import randint
 
 import numpy as np  # type: ignore
 import imageio  # type: ignore
 
 
-def trace_lightning(m: np.ndarray) -> List[np.ndarray]:
+def trace_lightning(m: np.ndarray) -> Generator[np.ndarray, None, None]:
     """Return a sequence of images of a lightning
 
     The algorithm is based on the A* algorithm
     """
 
-    ims: List[np.ndarray] = []
     im = np.zeros(m.shape, dtype=np.uint8)
     frame = 0
 
     visited = np.zeros(m.shape, dtype=np.bool)
     q: PriorityQueue[Tuple[float, float, int, int]] = PriorityQueue()
 
-    start = randint(0, m.shape[1] + 1)
+    start = randint(0, m.shape[1] - 1)
     q.put((0.0, 0.0, 0, start))
 
-    while q:
+    stop = False
+
+    while not stop:
         if frame % 20 == 0:
-            ims.append(im.copy())
+            yield im.copy()
         frame += 1
         im[im < 1] = 1
         im -= 1
@@ -43,7 +44,7 @@ def trace_lightning(m: np.ndarray) -> List[np.ndarray]:
             visited[r, c] = True
             im[r, c] = 255
             if r == m.shape[0] - 1:
-                return ims
+                stop = True
 
             # Loop over all of the neighbours of the point
             for nr, nc in (
@@ -68,30 +69,26 @@ def trace_lightning(m: np.ndarray) -> List[np.ndarray]:
         for t in tq:
             q.put(t)
 
-    return ims
-
 
 def generate_lightning(
-    rows: int, cols: int, num: int = 1, seed: Optional[int] = None
-) -> List[np.ndarray]:
+    rows: int, cols: int, num: int = 1
+) -> Generator[np.ndarray, None, None]:
     """Generates a gif of lightning"""
 
-    if seed is not None:
-        set_seed(seed)
-
-    res = []
     for _ in range(num):
         m = np.random.rand(rows, cols)
-        res += trace_lightning(m)
-
-    return res
+        yield from trace_lightning(m)
 
 
 if __name__ == "__main__":
 
+    import random
+
+    random.seed(2020)
+
     imageio.mimwrite(
         "media/lightning.gif",
-        generate_lightning(500, 500, num=10, seed=2020),
+        generate_lightning(500, 500, num=10),
         subrectangles=True,
         fps=30,
     )
