@@ -9,8 +9,8 @@ from enum import Enum
 from typing import Tuple, Optional, Deque, Iterator
 from collections import deque
 
-import numpy as np
-import imageio
+import numpy as np  # type: ignore
+import imageio  # type: ignore
 
 
 class Direction(Enum):

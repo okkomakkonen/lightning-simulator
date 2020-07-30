@@ -11,8 +11,8 @@ from random import randint
 from collections import deque
 from typing import Deque, Tuple, List, Optional, Iterator
 
-import numpy as np
-import imageio
+import numpy as np  # type: ignore
+import imageio  # type: ignore
 
 from maze import Maze, Direction
 
