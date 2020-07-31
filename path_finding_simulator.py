@@ -9,7 +9,7 @@ COL_VISITED = (30, 30, 153)
 import sys
 from random import randint
 from collections import deque
-from typing import Deque, Tuple, List, Optional, Iterator
+from typing import Deque, Tuple, Optional, Iterator, Generator
 
 import numpy as np  # type: ignore
 import imageio  # type: ignore
@@ -17,7 +17,7 @@ import imageio  # type: ignore
 from maze import Maze, Direction
 
 
-def breadth_first_search(m: Maze, start: int) -> List[np.ndarray]:
+def breadth_first_search(m: Maze, start: int) -> Generator[np.ndarray, None, None]:
 
     visited = np.zeros((m.rows, m.cols), dtype=np.bool)
     q: Deque[Tuple[int, int]] = deque()
@@ -25,12 +25,11 @@ def breadth_first_search(m: Maze, start: int) -> List[np.ndarray]:
     q.append((0, start))
     visited[0, start] = True
 
-    ims: List[np.array] = []
     im = np.ones((m.rows, m.cols, 3), dtype=np.uint8)
     im[:, :, :] = COL_UNVISITED
 
     while q:
-        ims.append(im.copy())
+        yield im.copy()
         ur, uc = q.popleft()
         for dir in Direction:
             if m.is_open(ur, uc, dir):
@@ -41,10 +40,10 @@ def breadth_first_search(m: Maze, start: int) -> List[np.ndarray]:
                     im[vr, vc] = COL_PVISITED
         im[ur, uc] = COL_VISITED
 
-    return ims
+    yield im.copy()
 
 
-def depth_first_search(m: Maze, start: int) -> List[np.ndarray]:
+def depth_first_search(m: Maze, start: int) -> Generator[np.ndarray, None, None]:
     class Frame:
         def __init__(self, r: int, c: int) -> None:
             self.r, self.c = r, c
@@ -55,12 +54,11 @@ def depth_first_search(m: Maze, start: int) -> List[np.ndarray]:
     stack: Deque[Frame] = deque()
     stack.append(Frame(0, start))
 
-    ims: List[np.array] = []
     im = np.ones((m.rows, m.cols, 3), dtype=np.uint8)
     im[:, :, :] = COL_UNVISITED
 
     while stack:
-        ims.append(im.copy())
+        yield im.copy()
         frame = stack[-1]
         visited[frame.r, frame.c] = True
         im[frame.r, frame.c] = COL_PVISITED
@@ -79,8 +77,7 @@ def depth_first_search(m: Maze, start: int) -> List[np.ndarray]:
             im[frame.r, frame.c] = COL_VISITED
             stack.pop()
 
-    ims.append(im.copy())
-    return ims
+    yield im.copy()
 
 
 if __name__ == "__main__":
